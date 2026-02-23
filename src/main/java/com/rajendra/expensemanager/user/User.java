@@ -18,5 +18,6 @@ public class User extends BaseEntity {
     private String password;
 
     @Column(nullable = false)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
