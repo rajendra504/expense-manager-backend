@@ -1,7 +1,9 @@
 package com.rajendra.expensemanager.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,35 +20,114 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(
-            MethodArgumentNotValidException ex) {
-        //logger.error("Validation exception occurred: {}", ex,ex);
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request) {
+
         Map<String, String> errors = new HashMap<>();
 
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage())
         );
 
+        logger.warn("Validation failed: {}", errors);
+
         ApiResponse<Map<String, String>> response =
-                new ApiResponse<>(false, errors, "Validation failed");
+                new ApiResponse<>(
+                        false,
+                        "Validation failed",
+                        null,
+                        errors,
+                        request.getRequestURI()
+                );
 
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBadCredentials(
+            BadCredentialsException ex,
+            HttpServletRequest request
+    ) {
 
+        ApiResponse<Object> response = new ApiResponse<>(
+                false,
+                "Invalid email or password",
+                null,
+                null,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleUserNotFound(
+            UserNotFoundException ex,
+            HttpServletRequest request) {
+
+        logger.warn("User not found: {}", ex.getMessage());
+
+        ApiResponse<Object> response =
+                new ApiResponse<>(
+                        false,
+                        ex.getMessage(),
+                        null,
+                        null,
+                        request.getRequestURI()
+                );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+    @ExceptionHandler(ExpenseNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleExpenseNotFound(
+            ExpenseNotFoundException ex,
+            HttpServletRequest request) {
+
+        logger.warn("Expense not found: {}", ex.getMessage());
+
+        ApiResponse<Object> response =
+                new ApiResponse<>(
+                        false,
+                        ex.getMessage(),
+                        null,
+                        null,
+                        request.getRequestURI()
+                );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ApiResponse<?>> handleApiException(ApiException ex) {
-        logger.warn("Business exception occurred: {}", ex.getMessage());
-        ApiResponse<?> response =
-                new ApiResponse<>(false, null, ex.getMessage());
+    public ResponseEntity<ApiResponse<Object>> handleApiException(
+            ApiException ex,
+            HttpServletRequest request) {
 
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        logger.warn("Business exception: {}", ex.getMessage());
+
+        ApiResponse<Object> response =
+                new ApiResponse<>(
+                        false,
+                        ex.getMessage(),
+                        null,
+                        null,
+                        request.getRequestURI()
+                );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
-
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<?>> handleGenericException(Exception ex) {
-        logger.error("Unexpected error occurred", ex);
-        ApiResponse<?> response =
-                new ApiResponse<>(false, null, "Something went wrong");
+    public ResponseEntity<ApiResponse<Object>> handleGenericException(
+            Exception ex,
+            HttpServletRequest request) {
 
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        logger.error("Unexpected error occurred", ex);
+
+        ApiResponse<Object> response =
+                new ApiResponse<>(
+                        false,
+                        "Something went wrong",
+                        null,
+                        null,
+                        request.getRequestURI()
+                );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
