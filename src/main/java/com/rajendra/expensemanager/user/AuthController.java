@@ -6,16 +6,15 @@ import com.rajendra.expensemanager.user.dto.LoginResponse;
 import com.rajendra.expensemanager.user.dto.RegisterRequest;
 import com.rajendra.expensemanager.user.dto.RegisterResponse;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
     private final AuthService authService;
 
     public AuthController(AuthService authService){
@@ -24,21 +23,36 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<RegisterResponse>> register(
-          @Valid @RequestBody RegisterRequest request) {
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest httpRequest) {
 
         RegisterResponse response = authService.register(request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(true, response, "User registered successfully"));
+                .body(new ApiResponse<>(
+                        true,
+                        "User registered successfully",
+                        response,
+                        null,
+                        httpRequest.getRequestURI()
+                ));
     }
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
-           @Valid @RequestBody LoginRequest request) {
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest) {
 
         LoginResponse response = authService.login(request);
 
-        return ResponseEntity.status(HttpStatus.OK).body(
-                new ApiResponse<>(true, response, "Login successful")
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        true,
+                        "Login successful",
+                        response,
+                        null,
+                        httpRequest.getRequestURI()
+                )
         );
     }
 }
