@@ -94,6 +94,24 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+    @ExceptionHandler(IncomeNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleIncomeNotFound(
+            ExpenseNotFoundException ex,
+            HttpServletRequest request) {
+
+        logger.warn("Income not found: {}", ex.getMessage());
+
+        ApiResponse<Object> response =
+                new ApiResponse<>(
+                        false,
+                        ex.getMessage(),
+                        null,
+                        null,
+                        request.getRequestURI()
+                );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiResponse<Object>> handleApiException(
             ApiException ex,

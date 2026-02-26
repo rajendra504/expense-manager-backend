@@ -1,4 +1,4 @@
-package com.rajendra.expensemanager.expense;
+package com.rajendra.expensemanager.income;
 
 import com.rajendra.expensemanager.common.BaseEntity;
 import com.rajendra.expensemanager.user.User;
@@ -7,27 +7,26 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "expenses")
+@Table(name = "incomes")
 @Getter
 @Setter
-public class Expense extends BaseEntity {
+public class Income extends BaseEntity {
 
-    @Column(nullable = false, length = 100)
-    private String title;
-
-    @Column(length = 500)
-    private String description;
+    @Column(nullable = false)
+    private String source;
 
     @Column(nullable = false)
     private BigDecimal amount;
 
     @Column(nullable = false)
-    private String category;
+    private LocalDate date;
+
+    private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
 }
