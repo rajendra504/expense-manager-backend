@@ -10,7 +10,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/expense_manager
     username: root
-    password: Raj@123
+    password: ${DB_LOCAL_PASSWORD:Raj@123}
 
   jpa:
     hibernate:
@@ -25,7 +25,7 @@ spring:
     baseline-on-migrate: true
 
 jwt:
-  secret: x<S&SiM6Fv:rO23j9(,J{ybK!vzlN(v_
+  secret: ${JWT_SECRET:your_super_secret_key_which_should_be_long_and_secure}
   expiration: 36000000
 
 logging:
