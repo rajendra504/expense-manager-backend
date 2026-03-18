@@ -23,4 +23,18 @@ public interface ExpenseRepository extends JpaRepository<Expense,Long>,
        WHERE e.user = :user
        """)
     BigDecimal getTotalExpenseByUser(User user);
+
+    @Query("""
+    SELECT YEAR(e.date), MONTH(e.date), COALESCE(SUM(e.amount), 0)
+    FROM Expense e
+    WHERE e.user = :user
+      AND e.date >= :from
+      AND e.date IS NOT NULL
+    GROUP BY YEAR(e.date), MONTH(e.date)
+    ORDER BY YEAR(e.date) ASC, MONTH(e.date) ASC
+    """)
+    List<Object[]> getMonthlyExpenseByUser(
+            @Param("user") User user,
+            @Param("from") java.time.LocalDate from
+    );
 }

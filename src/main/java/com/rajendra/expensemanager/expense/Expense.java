@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "expenses")
@@ -25,6 +26,9 @@ public class Expense extends BaseEntity {
 
     @Column(nullable = false)
     private String category;
+
+    @Column(nullable = true)
+    private LocalDate date;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

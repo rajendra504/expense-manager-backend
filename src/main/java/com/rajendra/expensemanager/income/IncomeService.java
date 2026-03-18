@@ -6,6 +6,7 @@ import com.rajendra.expensemanager.expense.ExpenseRepository;
 import com.rajendra.expensemanager.income.dto.FinancialSummaryResponse;
 import com.rajendra.expensemanager.income.dto.IncomeRequest;
 import com.rajendra.expensemanager.income.dto.IncomeResponse;
+import com.rajendra.expensemanager.income.dto.MonthlySummaryResponse;
 import com.rajendra.expensemanager.user.User;
 import com.rajendra.expensemanager.user.UserRepository;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -98,6 +104,49 @@ public class IncomeService {
                 totalExpense,
                 balance
         );
+    }
+    public List<MonthlySummaryResponse> getMonthlySummary(int months) {
+        User user = getCurrentUser();
+
+        LocalDate from = LocalDate.now()
+                .minusMonths(months - 1)
+                .withDayOfMonth(1);
+
+        List<Object[]> incomeRows =
+                incomeRepository.getMonthlyIncomeByUser(user, from);
+        List<Object[]> expenseRows =
+                expenseRepository.getMonthlyExpenseByUser(user, from);
+
+        // Map keyed by "YYYY-MM"
+        Map<String, BigDecimal> incomeMap = new LinkedHashMap<>();
+        for (Object[] row : incomeRows) {
+            String key = row[0] + "-" + String.format("%02d", row[1]);
+            incomeMap.put(key, (BigDecimal) row[2]);
+        }
+
+        Map<String, BigDecimal> expenseMap = new LinkedHashMap<>();
+        for (Object[] row : expenseRows) {
+            String key = row[0] + "-" + String.format("%02d", row[1]);
+            expenseMap.put(key, (BigDecimal) row[2]);
+        }
+
+        // Fill all months in range — gaps become zero
+        List<MonthlySummaryResponse> result = new ArrayList<>();
+        LocalDate cursor = from;
+        LocalDate now = LocalDate.now();
+
+        while (!cursor.isAfter(now)) {
+            String key = cursor.getYear() + "-" + String.format("%02d", cursor.getMonthValue());
+            result.add(new MonthlySummaryResponse(
+                    cursor.getYear(),
+                    cursor.getMonthValue(),
+                    incomeMap.getOrDefault(key, BigDecimal.ZERO),
+                    expenseMap.getOrDefault(key, BigDecimal.ZERO)
+            ));
+            cursor = cursor.plusMonths(1);
+        }
+
+        return result;
     }
     private IncomeResponse mapToResponse(Income income){
         IncomeResponse response = new IncomeResponse();

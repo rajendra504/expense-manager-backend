@@ -36,6 +36,7 @@ public class ExpenseService {
         expense.setDescription(request.getDescription());
         expense.setAmount(request.getAmount());
         expense.setCategory(request.getCategory());
+        expense.setDate(request.getDate());
         expense.setUser(user);
 
         Expense saved = expenseRepository.save(expense);
@@ -50,6 +51,7 @@ public class ExpenseService {
         expense.setDescription(request.getDescription());
         expense.setAmount(request.getAmount());
         expense.setCategory(request.getCategory());
+        expense.setDate(request.getDate());
 
         Expense updated = expenseRepository.save(expense);
         return mapToResponse(updated);
@@ -106,6 +108,7 @@ public class ExpenseService {
         response.setDescription(expense.getDescription());
         response.setAmount(expense.getAmount());
         response.setCategory(expense.getCategory());
+        response.setDate(expense.getDate());
         response.setUserId(expense.getUser().getId());
 
         return response;

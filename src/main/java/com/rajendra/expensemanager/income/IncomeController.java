@@ -4,6 +4,7 @@ import com.rajendra.expensemanager.exception.ApiResponse;
 import com.rajendra.expensemanager.income.dto.FinancialSummaryResponse;
 import com.rajendra.expensemanager.income.dto.IncomeRequest;
 import com.rajendra.expensemanager.income.dto.IncomeResponse;
+import com.rajendra.expensemanager.income.dto.MonthlySummaryResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -110,5 +113,21 @@ public class IncomeController {
                         request.getRequestURI()
                 )
         );
+    }
+
+    @GetMapping("/monthly-summary")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ApiResponse<List<MonthlySummaryResponse>>> monthlySummary(
+            @RequestParam(defaultValue = "6") int months,
+            HttpServletRequest request) {
+
+        List<MonthlySummaryResponse> data = incomeService.getMonthlySummary(months);
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Monthly summary fetched",
+                data,
+                null,
+                request.getRequestURI()
+        ));
     }
 }

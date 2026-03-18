@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -14,4 +15,5 @@ public class ExpenseResponse {
     private BigDecimal amount;
     private String Category;
     private Long userId;
+    private LocalDate date;
 }
