@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class ForgotPasswordRequest {
-    @NotBlank @Email
+    @NotBlank
+    @Email
     private String email;
 }
