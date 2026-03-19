@@ -31,8 +31,11 @@ public class EmailService {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            // log but don't crash registration
-            System.err.println("Failed to send welcome email: " + e.getMessage());
+            System.err.println("EMAIL ERROR - MessagingException: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("EMAIL ERROR - Unexpected: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
