@@ -24,6 +24,19 @@ spring:
     enabled: true
     baseline-on-migrate: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:rajendrap.chappidi@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
 jwt:
   secret: ${JWT_SECRET:your_super_secret_key_which_should_be_long_and_secure}
   expiration: 36000000

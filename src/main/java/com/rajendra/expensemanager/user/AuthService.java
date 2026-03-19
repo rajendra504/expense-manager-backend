@@ -1,5 +1,6 @@
 package com.rajendra.expensemanager.user;
 
+import com.rajendra.expensemanager.common.email.EmailService;
 import com.rajendra.expensemanager.exception.ApiException;
 import com.rajendra.expensemanager.security.JwtUtil;
 import com.rajendra.expensemanager.user.dto.LoginRequest;
@@ -23,15 +24,18 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
     public AuthService(JwtUtil jwtUtil,
                        UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       AuthenticationManager authenticationManager) {
+                       AuthenticationManager authenticationManager,
+                       EmailService emailService) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.emailService = emailService;
     }
 
     public RegisterResponse register(RegisterRequest request) {
@@ -49,7 +53,7 @@ public class AuthService {
         user.setRole(Role.USER);
 
         userRepository.save(user);
-
+        emailService.sendWelcomeEmail(request.getEmail());
         logger.info("User registered successfully: {}", user.getEmail());
 
         return new RegisterResponse(user.getEmail());
