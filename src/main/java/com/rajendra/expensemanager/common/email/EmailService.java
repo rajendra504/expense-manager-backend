@@ -1,33 +1,30 @@
 package com.rajendra.expensemanager.common.email;
 
-import com.resend.Resend;
-import com.resend.services.emails.model.CreateEmailOptions;
-import com.resend.services.emails.model.CreateEmailResponse;
+import com.sendgrid.*;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
 @Service
 public class EmailService {
 
-    @Value("${resend.api.key}")
+    @Value("${sendgrid.api.key}")
     private String apiKey;
+
+    @Value("${sendgrid.api.sender-email}")
+    private String senderEmail;
 
     @Async
     public void sendWelcomeEmail(String toEmail) {
         try {
-            Resend resend = new Resend(apiKey);
-
-            CreateEmailOptions request = CreateEmailOptions.builder()
-                    .from("Expense Tracker <onboarding@resend.dev>")
-                    .to(toEmail)
-                    .subject("Welcome to Expense Manager ⬡")
-                    .html(buildWelcomeEmailHtml(toEmail))
-                    .build();
-
-            CreateEmailResponse response = resend.emails().send(request);
-            System.out.println("Welcome email sent. ID: " + response.getId());
-
+            sendEmail(toEmail,
+                    "Welcome to Expense Manager ⬡",
+                    buildWelcomeEmailHtml(toEmail));
         } catch (Exception e) {
             System.err.println("Welcome email error: " + e.getMessage());
         }
@@ -36,20 +33,38 @@ public class EmailService {
     @Async
     public void sendOtpEmail(String toEmail, String otp) {
         try {
-            Resend resend = new Resend(apiKey);
-
-            CreateEmailOptions request = CreateEmailOptions.builder()
-                    .from("Expense Tracker <onboarding@resend.dev>")
-                    .to(toEmail)
-                    .subject("Your Password Reset OTP — Expense Manager")
-                    .html(buildOtpEmailHtml(toEmail, otp))
-                    .build();
-
-            CreateEmailResponse response = resend.emails().send(request);
-            System.out.println("OTP email sent. ID: " + response.getId());
-
+            sendEmail(toEmail,
+                    "Your Password Reset OTP — Expense Manager",
+                    buildOtpEmailHtml(toEmail, otp));
         } catch (Exception e) {
             System.err.println("OTP email error: " + e.getMessage());
+        }
+    }
+
+    private void sendEmail(String toEmail, String subject,
+                           String htmlContent) throws IOException {
+        Email from = new Email(senderEmail, "Expense Tracker");
+        Email to = new Email(toEmail);
+        Content content = new Content("text/html", htmlContent);
+
+        Mail mail = new Mail(from, subject, to, content);
+
+        SendGrid sg = new SendGrid(apiKey);
+        Request request = new Request();
+        request.setMethod(Method.POST);
+        request.setEndpoint("mail/send");
+        request.setBody(mail.build());
+
+        Response response = sg.api(request);
+
+        if (response.getStatusCode() >= 200
+                && response.getStatusCode() < 300) {
+            System.out.println("Email sent to: " + toEmail
+                    + " | Status: " + response.getStatusCode());
+        } else {
+            System.err.println("Email failed. Status: "
+                    + response.getStatusCode()
+                    + " Body: " + response.getBody());
         }
     }
 

@@ -23,9 +23,10 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: 36000000
 
-resend:
+sendgrid:
   api:
-    key: ${RESEND_API_KEY}
+    key: ${SENDGRID_API_KEY}
+    sender-email: ${SENDGRID_SENDER_EMAIL}
 
 server:
   port: ${PORT:8080}
