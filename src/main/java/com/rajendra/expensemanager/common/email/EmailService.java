@@ -1,35 +1,33 @@
 package com.rajendra.expensemanager.common.email;
 
+import com.resend.Resend;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.Map;
 
 @Service
 public class EmailService {
 
-    @Value("${brevo.api.key}")
+    @Value("${resend.api.key}")
     private String apiKey;
-
-    @Value("${brevo.api.sender-email}")
-    private String senderEmail;
-
-    @Value("${brevo.api.sender-name}")
-    private String senderName;
-
-    private static final String BREVO_URL =
-            "https://api.brevo.com/v3/smtp/email";
-
-    private final RestTemplate restTemplate = new RestTemplate();
 
     @Async
     public void sendWelcomeEmail(String toEmail) {
         try {
-            String html = buildWelcomeEmailHtml(toEmail);
-            sendEmail(toEmail, "Welcome to Expense Manager ⬡", html);
+            Resend resend = new Resend(apiKey);
+
+            CreateEmailOptions request = CreateEmailOptions.builder()
+                    .from("Expense Tracker <onboarding@resend.dev>")
+                    .to(toEmail)
+                    .subject("Welcome to Expense Manager ⬡")
+                    .html(buildWelcomeEmailHtml(toEmail))
+                    .build();
+
+            CreateEmailResponse response = resend.emails().send(request);
+            System.out.println("Welcome email sent. ID: " + response.getId());
+
         } catch (Exception e) {
             System.err.println("Welcome email error: " + e.getMessage());
         }
@@ -38,41 +36,20 @@ public class EmailService {
     @Async
     public void sendOtpEmail(String toEmail, String otp) {
         try {
-            String html = buildOtpEmailHtml(toEmail, otp);
-            sendEmail(toEmail, "Your Password Reset OTP — Expense Manager", html);
+            Resend resend = new Resend(apiKey);
+
+            CreateEmailOptions request = CreateEmailOptions.builder()
+                    .from("Expense Tracker <onboarding@resend.dev>")
+                    .to(toEmail)
+                    .subject("Your Password Reset OTP — Expense Manager")
+                    .html(buildOtpEmailHtml(toEmail, otp))
+                    .build();
+
+            CreateEmailResponse response = resend.emails().send(request);
+            System.out.println("OTP email sent. ID: " + response.getId());
+
         } catch (Exception e) {
             System.err.println("OTP email error: " + e.getMessage());
-        }
-    }
-
-    private void sendEmail(String toEmail, String subject, String htmlContent) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("api-key", apiKey);
-
-        Map<String, Object> body = Map.of(
-                "sender", Map.of(
-                        "name", senderName,
-                        "email", senderEmail
-                ),
-                "to", new Object[]{
-                        Map.of("email", toEmail)
-                },
-                "subject", subject,
-                "htmlContent", htmlContent
-        );
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                BREVO_URL, request, String.class
-        );
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            System.out.println("Email sent successfully to: " + toEmail);
-        } else {
-            System.err.println("Email failed. Status: " + response.getStatusCode()
-                    + " Body: " + response.getBody());
         }
     }
 
