@@ -1,0 +1,9 @@
+CREATE TABLE otp_tokens (
+    id         BIGINT PRIMARY KEY AUTO_INCREMENT,
+    email      VARCHAR(255) NOT NULL,
+    otp        VARCHAR(6)   NOT NULL,
+    expires_at TIMESTAMP    NOT NULL,
+    used       BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP    NULL ON UPDATE CURRENT_TIMESTAMP
+);
